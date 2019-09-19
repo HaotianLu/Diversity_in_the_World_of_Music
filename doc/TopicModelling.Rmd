@@ -1,0 +1,91 @@
+---
+title: "Topic Modelling"
+author: "Haotian Lu"
+output: html_notebook
+---
+
+### Imports 
+
+```{r load libraries, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(tidytext)
+#install.packages("plotly")
+library(plotly)
+library(DT)
+library(tm)
+library(data.table)
+library(scales)
+#install.packages("wordcloud2")
+library(wordcloud2)
+#install.packages("gridExtra")
+library(gridExtra)
+#install.packages("ngram")
+library(ngram)
+# install.packages("topicmodels")
+library(topicmodels)
+```
+
+## Topic Modelling 
+
+```{r load data, warning=FALSE, message=FALSE}
+## load lyrics data and artist information
+load('../output/processed_lyrics.RData') 
+dt_artist <- fread('../data/artists.csv') 
+```
+
+```{r}
+corp <- Corpus(VectorSource(dt_lyrics$stemmedwords))
+dtm <- DocumentTermMatrix(corp)
+```
+
+
+```{r}
+burnin <- 2000
+iter <- 1000
+thin <- 500
+seed <-list(2003,5,63,100001,765)
+nstart <- 5
+best <- TRUE
+
+## number of topics
+
+k <- 11
+
+## takes about 3 hrs to run the LDA model
+
+ldaOut <-LDA(dtm, k, method="Gibbs", control=list(nstart=nstart, 
+                                                 seed = seed, best=best,
+                                                 burnin = burnin, iter = iter, 
+                                                 thin=thin))
+```
+
+```{r}
+## docs to topics
+
+ldaOut.topics <- as.matrix(topics(ldaOut))
+table(c(1:k, ldaOut.topics))
+write.csv(ldaOut.topics,file=paste("../output/LDAGibbs",k,"DocsToTopics.csv"))
+```
+
+```{r}
+## view the topic assignment for each song
+
+head(ldaOut.topics, 10)
+```
+
+```{r}
+## top 10 words in each topic
+
+ldaOut.terms <- as.matrix(terms(ldaOut,10))
+ldaOut.terms
+write.csv(ldaOut.terms,file=paste("../output/LDAGibbs",k,"TopicsToTerms.csv"))
+```
+
+```{r}
+## based on the most popular 2 terms for each topic, I assign a hashtag to each topic. Hihgly opinionated!
+
+topics.hash=c("Shit/Money", "Death/Blood", "You/Leave", "She/Love", "He/Ride", "Life/World", "God/Soul", "Chorus/Dance", "Day/Dream", "Run/Burn", "Time/Heart")
+dt_lyrics$ldatopic=as.vector(ldaOut.topics)
+dt_lyrics$ldahash=topics.hash[ldaOut.topics]
+write.csv(dt_lyrics,file=paste("../output/", "processed_lyrics_with_topics.csv"))
+```
