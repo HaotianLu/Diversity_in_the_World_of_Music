@@ -1,0 +1,219 @@
+---
+title: "Diversity in the World of Music"
+author: "Johnny Lu"
+date: "September 18, 2019"
+output:
+  html_document:
+    code_folding: hide
+---
+
+
+
+### Primer - Why?  
+
+I always wonder, with Trump being the President and the US waging trade wars to almost all major economies, are americans or even the people in this world more conservative in their culture? 
+
+Since I am a big fan of music and we are offered with data about song lyrics, I would like to give an answer from the perspective of music. A bit more about myself: I practiced vocal music for 7 years, played some Ukelele and, most importantly, am writing this report while listening to *Sekei ga Owaru Made wa*, SLAM DUNK ED, a masterpiece covered by __Ru's Piano Ru__, a great Youtuber that does beautiful piano cover for many if not all of Anime music. 
+
+'The end of words is music'. Ideally, we would get a more honest and sincere answer from music than from President's Tweets. Let's get started!
+
+### Methodology - How?
+
+In one sentence, I want to know how the diversity of the content of music (*aka, song lyrics*) is.
+
+So, first and foremost, how to measure the __diversity__? For the sake of brevity and the efforts that I plan into Project 1, after several trials of different ideas, I decided on the following:
+
+__Diversity of Music Content = The Dispersion of Different Topics in Song Lyrics__
+
+So, next is to find a way to come up with the *different topics* that we need. As you may already thought of, I applied __topic modelling__ on all song lyrics. The result is shown below: 
+
+```{r, echo = FALSE}
+## Load the Processed Data with Topics Assigned 
+
+df = read.csv('../output/processed_lyrics_with_topics.csv')
+df = na.omit(df)
+```
+
+```{r, warning=FALSE, echo = FALSE, message=FALSE}
+
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(tidyverse)
+library(tidytext)
+library(DescTools)
+```
+
+```{r, echo = FALSE}
+by_year = group_by(df, year)
+
+## After did a research into the two outliers, I correct the year based info found on wikipedia.
+df[df$year == 112, ]$year <- 2009
+df[df$year == 702, ]$year <- 2010
+
+## we only care the songs where genres are clearly specified 
+df_genre_specified = df[df$genre != "Not Available",]
+df_genre_specified = df_genre_specified[df_genre_specified$genre != "Other",]
+```
+
+```{r, echo = FALSE}
+X <- data.frame(unique(df_genre_specified$ldahash))
+colnames(X) <- c("11 Topics Generated from Topic Modelling on Song Lyrics")
+
+X %>%
+  kable() %>%
+  kable_styling()
+```
+The two words you see are the top 2 most frequent words among all words that belong to that particular topic. 
+
+I intentionally set the number of topics to be 11, simply because we have 11 music genres in the dataset. It would be interesting to see how topics compare with genres. According to Wikipedia, [musics genres](https://en.wikipedia.org/wiki/Music_genre) are so-called *conventional categories* invented by human, while topics here represent categories by machine and algorithm.
+
+Before moving on, let's remind ourselves, *Diversity of Music Content = The Dispersion of Different Topics in Song Lyrics*. We now have the topics, but __how exactly to quantify its dispersion?__
+
+__Topics__ are *factors*, or categorical data, making variance/standard deviation useless in this case. After a bit research, I chose __[Shannon Entropy](https://en.wiktionary.org/wiki/Shannon_entropy)__ as the measure of dispersion, given as: $H = - \sum_{i}^{n} p_i \log_b p_i$, where $p_i$ is the probability of character number $i$ appearing in the stream of characters of the message. 
+
+
+
+```{r, echo = FALSE}
+df_diverse = df_genre_specified %>% 
+  group_by(year, genre) %>%
+  summarise(confidence = n(), genre_diversity = Entropy(ldatopic)) %>%
+  arrange(year) %>%
+  na.omit()
+```
+
+```{r, echo = FALSE}
+df_genre_overall = df_genre_specified %>% 
+  group_by(genre) %>%
+  summarise(confidence = n(), genre_overall_diversity = Entropy(ldatopic))
+# df_genre_overall
+```
+
+```{r, echo = FALSE}
+ df_inter = df_genre_specified %>% 
+  group_by(genre, ldatopic, ldahash) %>%
+  summarise(topic_count = n()) %>%
+  arrange(genre, desc(topic_count))
+# df_inter
+```
+
+```{r, echo = FALSE}
+df_mctopic_for_genre = df_inter %>%
+  group_by(genre) %>%
+  filter(topic_count == max(topic_count)) 
+# df_mctopic_for_genre
+```
+
+```{r, echo = FALSE}
+df_artist_diverse = df_genre_specified %>% 
+  group_by(artist) %>%
+  summarise(volume = n(), topic_diversity = Entropy(ldatopic)) %>%
+  na.omit() %>%
+  filter(volume > 500) %>%
+  arrange(desc(topic_diversity)) 
+# df_artist_diverse
+```
+
+
+### Results - All the Eye Candies! 
+
+##### *Plot 1: What Is the Most Diverse Genre?*
+```{r}
+df_genre_overall$genre <- 
+  factor(df_genre_overall$genre, levels = df_genre_overall$genre[order(df_genre_overall$genre_overall_diversity)])
+
+ggplot(data=df_genre_overall, aes(x = genre, y = genre_overall_diversity)) +
+  geom_bar(stat="identity", fill="cadetblue") + 
+  labs(y = "Dispersion of Topics (measured in Shannon Entropy)", x = "Genre") + 
+  ggtitle("Diversity of Content for 10 Music Genres") +
+  geom_text(aes(label = df_mctopic_for_genre$ldahash), hjust = 1.5, color="white", size = 4.2) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    panel.background = element_rect(fill = 'white'),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+    ) +
+  coord_flip() 
+```
+
+From the plot above, we see 
+
+* __Rock Music__ wins the champion for diversity in music content; __Pop Music__ comes next and __Metal Music__ third.
+* __Rock Music__ most likely sings topic of "He/Ride".
+* The most frequent topic in each genre is labelled in white on its bar, and they are very likely to be different from others.
+* The most frequent topic in each genre matched my impression (or sterotype lol) about each genre. Do they match yours?
+
+##### *Plot 2: What is the Trend?*
+```{r}
+ggplot(
+  data = df_diverse, 
+  aes(x = year, y = genre_diversity, color = genre)
+  ) +
+  geom_smooth(method = "loess", se = FALSE, span = 1) +
+  labs(x = "Year", y = "Dispersion of Topics (measured in Shannon Entropy)") + 
+  ggtitle("Historical Trend of Diversity of Content for 10 Music Genres") +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    panel.background = element_rect(fill = 'white'),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    legend.background = element_rect(fill="linen", size=6),
+    legend.title=element_blank()
+    ) +
+  scale_color_brewer(palette = "Paired")        
+        
+``` 
+
+From this plot (the most exciting one in my opinion), we see 
+
+* Almost ALL music genres are getting more and more inclusive in terms of content!
+* However, only __Hip-Hop Music__ and __Folk Music__ have a trend of decreasing diversity!
+
+One might argue that this is actually due to the *word choice* in these 2 types of music do not really change, but not really because they tend to become less inclusive in terms of content/topics covered. I think it goes beyond the domain of science and enters what-we-call art. It really depends on what you believe and how you interpret, and that is exactly what makes this plot really exciting! 
+
+
+##### *Plot 3: Who Is the Most Diverse Artist in the History?*
+```{r}
+df_artist_diverse$artist <- 
+  factor(df_artist_diverse$artist, levels = df_artist_diverse$artist[order(df_artist_diverse$topic_diversity)])
+
+ggplot(data = df_artist_diverse, aes(x = artist, y = topic_diversity)) +
+  geom_bar(stat="identity", fill = "brown") + 
+  labs(y = "Dispersion of Topics (measured in Shannon Entropy)", x = "Artist") + 
+  ggtitle("Top 12 Artists with Most Diverse Topics in Their Music") +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    panel.background = element_rect(fill = 'white'),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+    ) +
+  coord_flip()
+```
+
+Since Shannon Entropy works meaningfully only when there are enough samples, I considered only artists that have released more than __500__
+songs in this competition. Thanks for the dataset, we have plenty of artists that meet this requirement. The top 12 artists are listed above. A few that I love the most, __*Elton John*__,  __*Bob Dylan*__ and __*Eminem*__!
+
+##### *Plot 4: Caution!*
+```{r}
+df_year = df_genre_specified %>% 
+  group_by(year) %>%
+  summarise(num_of_songs = n()) %>%
+  arrange(year)
+
+ggplot(data=df_year, aes(x=year, y=num_of_songs, group=1)) +
+  geom_line(color = "hotpink") +
+  labs(y = "Number of Samples", x = "Year") +
+  ggtitle("Number of Samples Across Years") +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    panel.background = element_rect(fill = 'white'),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+    ) 
+```
+
+This is not the most aesthetically pleasing plot, I know, but a very important one. It helps us have a sense of __confidence__ of what we found. Although the dataset contains a decent amount of samples anytime from *1970* to *2019*, we need to be aware that we have implicitly put more weights on the more recent results and to be more precisely, results from *2005* to *2010*, simply due to the more samples during these years. 
+
+### Conclusion
+
+Music is getting more and more Diverse. We have plenty of great artists that are making music that cares about different groups of audience. This is not the end of world. Work hard and go get a job. 
