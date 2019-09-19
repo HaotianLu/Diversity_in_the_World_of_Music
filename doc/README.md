@@ -2,4 +2,11 @@
 
 ### Doc folder
 
-The doc directory contains the report or presentation files. It can have subfolders.  
+Run the files in the following order:
+
+Texting_Processing.Rmd ->
+
+TopicModelling.Rmd ->
+
+Report.Rmd
+
