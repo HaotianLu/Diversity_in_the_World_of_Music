@@ -2,11 +2,6 @@
 ## Fall 2019
 ## Project 1: "Data Story" on Song Lyrics
 
-### [Project Description](doc/)
-This is the first and only *individual* (as opposed to *team*) this semester. 
-
-Term: Fall 2019
-
 + Projec title: 
 
 Diversity in the World of Music
@@ -27,7 +22,8 @@ Since I am a big fan of music and we are offered with data about song lyrics, I 
 
 __There is one file that is too large to be uploaded to "output". You have to run TopicModelling.Rmd to generate it under your own "output" directory. Thanks for your attention!__
 
-Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
+
+This folder is orgarnized as follows.
 
 ```
 proj/
