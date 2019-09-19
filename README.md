@@ -25,7 +25,7 @@ Since I am a big fan of music and we are offered with data about song lyrics, I 
 
 + __Caution__: 
 
-There is one file that is too large to be uploaded to "output". You have to run TopicModelling.Rmd to generate it under your own "output" directory. Thanks for your attention!
+__There is one file that is too large to be uploaded to "output". You have to run TopicModelling.Rmd to generate it under your own "output" directory. Thanks for your attention!__
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
