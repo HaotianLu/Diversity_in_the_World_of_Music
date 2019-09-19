@@ -1,6 +1,7 @@
 # Applied Data Science @ Columbia
 ## Fall 2019
-## Project 1: A "data story" on the songs of our times
+## Project 1: Diversity in the World of Music
+## Author: Johnny Lu (UNI: hl3089)
 
 ### [Project Description](doc/)
 This is the first and only *individual* (as opposed to *team*) this semester. 
