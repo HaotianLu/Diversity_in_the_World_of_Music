@@ -1,14 +1,8 @@
-# Applied Data Science @ Columbia
-## Fall 2019
-## Project 1: "Data Story" on Song Lyrics
-
-+ Project title: 
-
-Diversity in the World of Music
+## Project 1: Diversity in the World of Music
 
 + Author:
 
-Johnny Lu (UNI: hl3089)
+Johnny Lu 
 
 + Project summary: 
 
