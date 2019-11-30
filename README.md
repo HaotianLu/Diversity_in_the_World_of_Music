@@ -1,5 +1,9 @@
 ## Project 1: Diversity in the World of Music
 
+### To quickly review the results of the project, go to "doc" and follow the README in the file. 
+
+
+
 + Author:
 
 Johnny Lu 
