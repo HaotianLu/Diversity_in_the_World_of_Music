@@ -2,7 +2,7 @@
 ## Fall 2019
 ## Project 1: "Data Story" on Song Lyrics
 
-+ Projec title: 
++ Project title: 
 
 Diversity in the World of Music
 
