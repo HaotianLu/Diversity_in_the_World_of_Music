@@ -1,13 +1,7 @@
 ## Project 1: Diversity in the World of Music
 
+### ** To quickly read the report of the project, go to "doc" and look for "Report.HTML".
 ### ** To rerun the codes and review the project in details, go to "doc" and follow the README in the file. 
-### ** To quickly read the report of the project, go to "output" and look for the only pdf file in the folder, "Diversity_in_Music_JL". 
-
-
-
-+ Author:
-
-Johnny Lu 
 
 + Project summary: 
 
